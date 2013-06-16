@@ -1,7 +1,0 @@
-<Template xmlns="http://www.evolus.vn/Namespace/Pencil">
-    <Property name="id">HMagalhaes:HTML:GUI:eng</Property>
-    <Property name="name">HMagalhaes' Prototype (eng)</Property>
-    <Property name="author">www.hmagalhaes.eti.br</Property>
-    <Property name="description">Shows one page at a time without restricting the rasterized image size. It keeps the navigation links and allow direct page selection through a thumbnails list.</Property>
-    <Property name="styleSheet">StyleSheet.xslt</Property>
-</Template>
