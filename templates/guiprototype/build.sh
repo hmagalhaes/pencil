@@ -1,17 +1,23 @@
 #!/bin/bash
 
+# $1 Path to reset
+# $2 Keep content (1) or not (anything else)
 function resetDir() {
 	if [ ! -d $1 ];
 		then
 			mkdir $1
 		else
-			cd $1
-			count=$(dirContent $1)
-			if [ count > 0 ];
+			if [ "$2" != "1" ];
 				then
-					rm -R *
+				echo "Entrou: $1"
+					cd $1
+					count=$(dirContent $1)
+					if [ count > 0 ];
+						then
+							rm -R *
+						fi
+					cd ..
 				fi
-			cd ..
 		fi
 }
 
@@ -71,8 +77,8 @@ if [ -z "$1" ];
 		#echo "Input ok"
 
 		#output preparation
-		resetDir "dist"
-		resetDir "build"
+		resetDir "dist" 1
+		resetDir "build" 0
 		#echo "Output ok"
 			
 		#building target
@@ -85,7 +91,9 @@ if [ -z "$1" ];
 		
 		#dist
 		cd build
-		zip -9 -y -q -r "../dist/hmagalhaes_gui_prototype-"$lang".zip" *
+		zipFile="../dist/hmagalhaes_gui_prototype-"$lang".zip"
+		rm -f $zipFile
+		zip -9 -y -q -r $zipFile *
 		cd ..
 		#echo "Dist ok at ./dist"
 	fi

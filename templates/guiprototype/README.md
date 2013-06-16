@@ -22,6 +22,9 @@ _Tip: If you build your own new language, spend some time editing the "Template.
 A simple Zip file containg some specific files organized in a determined structure.  
 _Tip: Only some files are determined, must of them are up to the template writer._
 
+**Download!**  
+Builded packages are in the "dist" folder. Give it a try.
+
 
 How to build
 -------------
