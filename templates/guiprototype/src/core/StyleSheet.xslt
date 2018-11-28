@@ -17,21 +17,26 @@
 					<span><!-- ico --></span>
 					<p><!-- message --></p>
 				</div>
-            
-				<div id="frame"><div><!--
-					<img src="" width="" height="" usemap=""/>
-				--></div></div>
+
+				<div id="frame">
+                    <div class="img-frame">
+                        <!--
+                        <img src="" width="" height="" usemap=""/>
+                        <canvas></canvas>
+                        -->
+                    </div>
+                </div>
 
 				<div id="dial"><div>
 					<h1></h1>
 					<div><xsl:apply-templates select="/p:Document/p:Pages/p:Page" /></div>
 				</div></div>
-                
+
 				<div id="notes"><div>
 					<h1></h1>
 					<div></div>
 				</div></div>
-				
+
 				<div id="panel"><div>
 					<h1></h1>
 					<div class="buttons">
@@ -48,8 +53,8 @@
             </body>
         </html>
     </xsl:template>
-    
-    
+
+
     <xsl:template match="p:Page">
 		<div class="page" _id="{p:Properties/p:Property[@name='fid']/text()}">
 			<div class="img">
@@ -59,20 +64,20 @@
 			<h2><xsl:value-of select="p:Properties/p:Property[@name='name']/text()"/></h2>
 			<div class="notes"><xsl:if test="p:Note/node()"><xsl:apply-templates select="p:Note/node()" mode="processing-notes"/></xsl:if></div>
 		</div>
-    
+
 		<xsl:if test="p:Links/p:Link">
 			<map name="map_{p:Properties/p:Property[@name='fid']/text()}">
 				<xsl:apply-templates select="p:Links/p:Link" />
 			</map>
 		</xsl:if>
     </xsl:template>
-    
-    
+
+
     <xsl:template match="p:Link">
         <area shape="rect"
             coords="{@x},{@y},{@x+@w},{@y+@h}" href="#{@targetFid}" title="{@targetName}"/>
     </xsl:template>
-    
+
     <xsl:template match="html:*" mode="processing-notes">
         <xsl:copy>
             <xsl:copy-of select="@*[local-name() != '_moz_dirty']"/>

@@ -5,16 +5,16 @@ var ui = {
 	MODE_DEFAULT: "",
 	MODE_DIAL: "dial",
 	MODE_NOTES: "notes",
-	
+
 	htmlContainer: null,
-	
+
 	initializing: false,
 	loaded: false,
-	
-	// should rund in document.ready
+
+	// should run in document.ready
 	init: function() {
 		this.initializing = true;
-		
+
 		this.htmlContainer = $("html");
 
 		this.loading.init();
@@ -25,15 +25,16 @@ var ui = {
 		this.panel.init();
 
 		// escape button event
-		document.addEventListener("keydown", function(e) { ui.keyPressed(e.keyCode); });
+		document.addEventListener("keydown", function(e) { ui.keyDown(e.which || e.keyCode); });
+		document.addEventListener("keyup", function(e) { ui.keyUp(e.which || e.keyCode); });
 
 		ui.reset();
 		ui.checkUrl();
-		
+
 		this.initializing = false;
 		this.load();
 	},
-	
+
 	// should run in window.load
 	load: function() {
 		if (!this.loaded && !this.initializing) {
@@ -51,14 +52,14 @@ var ui = {
 			this.container.remove();
 		}
 	},
-	
+
 	// the pages collection
 	pages: {
 		pages: [],
 		pageMap: {},
 		currentPage: null,
 		lastShownPageId: null,
-		
+
 		init: function() {
 			this.container = $(document.body).children("#dial>div>div");
 		},
@@ -88,7 +89,7 @@ var ui = {
 
 			ui.pages.pages.push(page);
 			ui.pages.pageMap[page.id] = page;
-				
+
 			return page;
 		},
 		loadPage: function(id) {
@@ -101,27 +102,61 @@ var ui = {
 			return false;
 		}
 	},
-	
+
 	// the pages frame
 	frame: {
 		init: function() {
 			this.container = $(document.body).children("#frame");
-			this.inner = this.container.children("div");
+			this.imageFrame = this.container.find(".img-frame");
+			this.currentImg = null;
 			this.hide();
 		},
 		loadPage: function() {
 			var p = ui.pages.currentPage;
-			this.inner.children("*").remove();
-			this.inner.append("<img src='" + p.image.getURL() +
-					"' width='" + p.image.getWidth() +
-					"' height='" + p.image.getHeight() 
-					+ "' usemap='#map_" + p.id + "'/>");
+			this.imageFrame.empty()
+					.prepend("<img src='" + p.image.getURL() +
+							"' width='" + p.image.getWidth() +
+							"' height='" + p.image.getHeight()
+							+ "' usemap='#map_" + p.id + "'/>");
 		},
 		show: function() {
 			this.container.show(ui.ANIM);
 		},
 		hide: function() {
 			this.container.hide(ui.ANIM);
+		},
+		showHotspots: function() {
+			this.hideHotspots();
+
+			var img = this.imageFrame.find(">img");
+
+			var $canvas = $("<canvas></canvas>")
+					.attr("width", img.width())
+					.attr("height", img.height())
+					.appendTo(this.imageFrame);
+
+			var ctx = $canvas.get(0).getContext("2d");
+			ctx.fillStyle = "rgba(0, 255, 249, 0.4)";
+
+			var page = ui.pages.currentPage;
+			var mapSelector = "map[name=map_" + page.id + "]";
+			$(mapSelector).find(">area").each(function(i, area) {
+				var coords = $(area).attr("coords");
+				if (coords == null || $.trim(coords) == "") {
+					return;
+				}
+				var parts = coords.split(",");
+
+				var left = parseInt(parts[0]);
+				var top = parseInt(parts[1]);
+				var width = parseInt(parts[2]) - left;
+				var height = parseInt(parts[3]) - top;
+
+				ctx.fillRect(left, top, width, height);
+			});
+		},
+		hideHotspots: function() {
+			this.imageFrame.find("canvas").remove();
 		}
 	},
 
@@ -164,7 +199,7 @@ var ui = {
 							ui.reset();
 						});
 			});
-			
+
 			// lang
 			_inner.children("h1").html(lang.dial.title);
 
@@ -182,10 +217,10 @@ var ui = {
 		init: function() {
 			this.container = $(document.body).children("#panel");
 			this.hide();
-			
+
 			var _inner = this.container.children("div");
 			this.title = _inner.children("h1");
-			
+
 			var _x = this.container.find(".buttons");
 			this.buttons = {
 				notes: _x.children(".notes"),
@@ -193,13 +228,13 @@ var ui = {
 				dial: _x.children(".dial"),
 				back: _x.children(".back")
 			};
-			
+
 			// lang
 			this.buttons.home.prop("title", lang.panel.buttons.home);
 			this.buttons.dial.prop("title", lang.panel.buttons.dial);
 			this.buttons.back.prop("title", lang.panel.buttons.back);
 				// the notes button has special treatment
-			
+
 			// events
 			this.buttons.notes.bind("click", function() {
 				if (! $(this).hasClass("disabled")) {
@@ -234,7 +269,7 @@ var ui = {
 			this.container.removeClass(ui.MODE_ALL);
 			this.container.addClass(m);
 		},
-		
+
 		show: function() {
 			this.container.show();
 		},
@@ -248,7 +283,7 @@ var ui = {
 		this.htmlContainer.addClass(m);
 		this.panel.setMode(m);
 	},
-	
+
 	reset: function() {
 		this.dial.hide();
 		this.notes.hide();
@@ -257,12 +292,21 @@ var ui = {
 		this.setMode(this.MODE_DEFAULT);
 	},
 
-	keyPressed: function(k) {
+	keyDown: function(k) {
 		if (k == 27) {
 			this.reset();
 		}
+		if (k == 16) { // shift
+			this.frame.showHotspots();
+		}
 	},
-	
+
+	keyUp: function(k) {
+		if (k == 16) { // shift
+			this.frame.hideHotspots();
+		}
+	},
+
 	loadPage: function(id) {
 		if (this.pages.loadPage(id)) {
 			this.panel.loadPage();
@@ -273,7 +317,7 @@ var ui = {
 	goToPage: function(id) {
 		window.location.href = "#" + id;
 	},
-	
+
 	goToFirstPage: function() {
 		var f = this.pages.pages[0];
 		this.goToPage(f.id);
@@ -293,7 +337,7 @@ var ui = {
 			} else if (this.pages.pages.length > 0) {
 				this.goToFirstPage();
 			}
-		} catch (ex) { 
+		} catch (ex) {
 			throw ex;
 		} finally {
 			window.setTimeout(function(){ ui.checkUrl(); }, 200);
